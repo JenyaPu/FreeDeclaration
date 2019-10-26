@@ -5,7 +5,7 @@ from time import gmtime, strftime
 import time
 import datetime
 # import statistics
-import pprint
+# import pprint
 
 start_from = 0
 table = "income"
@@ -107,6 +107,46 @@ def get_single_region_data_real_estates(region):
     return array
 
 
+def add_single_region_data_persons(region, conn, cursor):
+
+    timestamp = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+
+    for year in years:
+        params = {'region': region[0], 'year': year, 'page': 1}
+        response = requests.get(url, params=params).json()
+        count = response["count"]
+        print("%s в %s: %d" % (region[1], year, count))
+        pages = count // 10 + 1
+        if count > 0:
+            for i in range(1, pages):
+                params = {'region': region[0], 'year': year, 'page': i}
+                response = requests.get(url, params=params).json()
+                reduced = response["results"]
+                for entry in reduced:
+                    if (len(entry["real_estates"]) > 0) and (len(entry["incomes"]) > 0) \
+                            and (len(entry["main"]["person"]) > 0) and (len(entry["main"]["office"]) > 0):
+                        decl_id = entry["main"]["person"]["id"]
+                        name = entry["main"]["person"]["name"]
+                        gender = entry["main"]["person"]["gender"]
+                        office = entry["main"]["office"]["name"]
+                        if entry["main"]["party"] is not None:
+                            party = entry["main"]["party"]["name"]
+                        else:
+                            party = ""
+                        income = entry["incomes"][0]["size"]
+                        squares = 0
+                        for estate in entry["real_estates"]:
+                            square = estate["square"]
+                            if square is not None:
+                                squares = squares + square
+                        squares = round(squares, 1)
+                        array = [decl_id, region[0], region[1], year, name, gender, office, party,
+                                 income, squares, timestamp]
+                        cursor.execute("INSERT OR IGNORE INTO persons VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                       array)
+                        conn.commit()
+
+
 def initialize_database():
 
     conn1 = sqlite3.connect("data/database/incomes.db")
@@ -135,6 +175,16 @@ def initialize_database():
     cursor.close()
     conn2.close()
 
+    conn3 = sqlite3.connect("data/database/persons.db")
+    cursor = conn3.cursor()
+    cursor.execute("""CREATE TABLE IF NOT EXISTS persons
+                      (decl_id text primary key, region_id text, region text, year text, name text, gender text,
+                      office text, party text, income text, squares text, timestamp text)
+                   """)
+    conn3.commit()
+    cursor.close()
+    conn3.close()
+
 
 def download_incomes():
     conn = sqlite3.connect("data/database/incomes.db")
@@ -159,7 +209,14 @@ def download_real_estates():
     cursor.close()
     conn.close()
 
-initialize_database()
+
+def download_people():
+    conn = sqlite3.connect("data/database/persons.db")
+    cursor = conn.cursor()
+    for j in range(start_from, len(regions)):
+        region_take = regions[j]
+        add_single_region_data_persons(region_take, conn, cursor)
+
 
 # Open region description
 with open('data/description/region.csv', 'r', encoding="utf-8") as f:
@@ -167,10 +224,12 @@ with open('data/description/region.csv', 'r', encoding="utf-8") as f:
     next(reader, None)
     regions = list(reader)
 url = "https://declarator.org/api/v1/search/sections/"
-years = ['2012', '2013', '2014', '2015', '2016', '2017']
+# years = ['2012', '2013', '2014', '2015', '2016', '2017']
+years = ['2015']
 
-
+# Fill-in  databases
+initialize_database()
 start = time.time()
-download_real_estates()
+download_people()
 end = time.time()
 print(str(datetime.timedelta(seconds=(end - start))))
