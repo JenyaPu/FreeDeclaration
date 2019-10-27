@@ -135,14 +135,18 @@ def add_single_region_data_persons(region, conn, cursor):
                             party = ""
                         income = entry["incomes"][0]["size"]
                         squares = 0
+                        squares2 = 0
                         for estate in entry["real_estates"]:
                             square = estate["square"]
                             if square is not None:
-                                squares = squares + square
+                                if estate["type"]["id"] != 1:
+                                    squares = squares + square
+                                elif estate["type"]["id"] == 1:
+                                    squares2 = squares2 + square
                         squares = round(squares, 1)
                         array = [decl_id, region[0], region[1], year, name, gender, office, party,
-                                 income, squares, timestamp]
-                        cursor.execute("INSERT OR IGNORE INTO persons VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                                 income, squares, squares2, timestamp]
+                        cursor.execute("INSERT OR IGNORE INTO persons VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
                                        array)
                         conn.commit()
 
@@ -179,7 +183,7 @@ def initialize_database():
     cursor = conn3.cursor()
     cursor.execute("""CREATE TABLE IF NOT EXISTS persons
                       (decl_id text primary key, region_id text, region text, year text, name text, gender text,
-                      office text, party text, income text, squares text, timestamp text)
+                      office text, party text, income text, squares text, squares2 text, timestamp text)
                    """)
     conn3.commit()
     cursor.close()

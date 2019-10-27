@@ -3,12 +3,25 @@
     <words>
       <w>boxplot</w>
       <w>decl</w>
+      <w>figsize</w>
+      <w>fontdict</w>
+      <w>fontsize</w>
+      <w>hlines</w>
+      <w>horizontalalignment</w>
+      <w>linestyle</w>
       <w>locs</w>
       <w>matplotlib</w>
       <w>preprocess</w>
+      <w>rosstat</w>
+      <w>scatterplots</w>
+      <w>verticalalignment</w>
+      <w>xlim</w>
+      <w>xmax</w>
+      <w>xmin</w>
       <w>xticklabel</w>
       <w>xticklabels</w>
       <w>ylim</w>
+      <w>yticks</w>
     </words>
   </dictionary>
 </component>
