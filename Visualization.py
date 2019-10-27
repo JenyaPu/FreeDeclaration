@@ -7,6 +7,7 @@ import csv
 import matplotlib.pyplot as plt
 import warnings
 import statistics
+from plot_grid_map import plot_grid_map
 warnings.filterwarnings(action='once')
 
 
@@ -94,18 +95,6 @@ def scatter_plot(region, year, a_square1, a_income1):
         plt.savefig("images/scatterplots/" + region[0] + "_" + year + ".png", bbox_inches='tight')
 
 
-with open('data/description/region.csv', 'r', encoding="utf-8") as f:
-    reader = csv.reader(f)
-    next(reader, None)
-    regions = list(reader)
-years = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017']
-with open('data/rosstat/square_income.csv', 'r', encoding="utf-8") as f:
-    reader = csv.reader(f)
-    rosstat = list(reader)
-headers = rosstat.pop(0)
-df_rosstat = pd.DataFrame(rosstat, columns=headers)
-
-
 def make_scatterplots():
     for k, region1 in enumerate(regions):
         if k > 0:
@@ -115,7 +104,6 @@ def make_scatterplots():
                 scatter_plot(region1, year_take1, df11[year_cols1[0]], df11[year_cols1[1]])
 
 
-# Make a table with overall statistics per region
 def make_averaged_table():
     df_averaged = pd.DataFrame(columns=(
         "region_id", "region", "year", "a_income", "a_squares", "a_squares2", "a_cor", "b_income", "b_squares"))
@@ -150,6 +138,19 @@ def make_averaged_table():
             df_averaged = df_averaged.append(df3)
     df_averaged.to_csv(r'data/output/averaged.csv', index=False, header=True)
 
+
+def grid_map():
+    df = pd.read_csv('data/rosstat/declarator_rosstat.csv')
+    features_list = ['Площадь чиновника', 'Площадь средняя']
+
+    plot_grid_map(df, features_list,
+                  shuffle=True,
+                  pixels=20,
+                  bar_plot=False,
+                  tile_names='subj_rus',
+                  fed_distr_color=True)
+
+
 # # H-lines
 # # Prepare Data
 # df = pd.read_csv("https://github.com/selva86/datasets/raw/master/mtcars.csv")
@@ -172,3 +173,16 @@ def make_averaged_table():
 # plt.grid(linestyle='--', alpha=0.5)
 # plt.xlim(-2.5, 2.5)
 # plt.show()
+
+# Initial preparations with the most common data
+with open('data/description/region.csv', 'r', encoding="utf-8") as f:
+    reader = csv.reader(f)
+    next(reader, None)
+    regions = list(reader)
+years = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017']
+with open('data/rosstat/square_income.csv', 'r', encoding="utf-8") as f:
+    reader = csv.reader(f)
+    rosstat = list(reader)
+headers = rosstat.pop(0)
+df_rosstat = pd.DataFrame(rosstat, columns=headers)
+grid_map()
