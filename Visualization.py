@@ -194,7 +194,7 @@ with open('data/description/region.csv', 'r', encoding="utf-8") as f:
     next(reader, None)
     regions = list(reader)
 years = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017']
-with open('data/rosstat/square_income.csv', 'r', encoding="utf-8") as f:
+with open('data/declarator_rosstat/square_income.csv', 'r', encoding="utf-8") as f:
     reader = csv.reader(f)
     rosstat = list(reader)
 headers = rosstat.pop(0)
@@ -203,6 +203,6 @@ df_rosstat = pd.DataFrame(rosstat, columns=headers)
 
 # preprocess_data_incomes()
 # make_averaged_table()
-make_boxplots(years[0], dpi=80)
+# make_boxplots(years[0], dpi=80)
 # make_scatterplots()
-# grid_map("income")
+grid_map("income")
