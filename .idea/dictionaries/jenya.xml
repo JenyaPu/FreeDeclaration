@@ -2,9 +2,12 @@
   <dictionary name="jenya">
     <words>
       <w>boxplot</w>
+      <w>boxplots</w>
       <w>decl</w>
       <w>declarator</w>
+      <w>distr</w>
       <w>figsize</w>
+      <w>filname</w>
       <w>fontdict</w>
       <w>fontsize</w>
       <w>hlines</w>
@@ -12,9 +15,12 @@
       <w>linestyle</w>
       <w>locs</w>
       <w>matplotlib</w>
+      <w>pallete</w>
       <w>preprocess</w>
+      <w>preprocessing</w>
       <w>rosstat</w>
       <w>scatterplots</w>
+      <w>underlayer</w>
       <w>verticalalignment</w>
       <w>xlim</w>
       <w>xmax</w>

@@ -2,12 +2,12 @@ import sqlite3
 import pandas as pd
 import seaborn as sns
 import csv
-# import numpy as np
-# import matplotlib
 import matplotlib.pyplot as plt
 import warnings
 import statistics
 from plot_grid_map import plot_grid_map
+# import numpy as np
+# import matplotlib
 warnings.filterwarnings(action='once')
 
 
@@ -34,14 +34,17 @@ def preprocess_data_incomes():
     conn2.close()
 
 
-def make_boxplot():
-    # Draw Plot
+def make_boxplots(year, dpi):
     conn1 = sqlite3.connect("data/database/persons.db")
     df11 = pd.read_sql_query("SELECT * FROM persons", conn1)
-    plt.figure(figsize=(50, 10), dpi=50)
-    sns.boxplot(x='region', y='incomes', data=df11, notch=False)
+    df11['income'] = df11['income'].astype(float)/12
+    df11 = df11.loc[df11['year'] == year]
+    fig = plt.figure(figsize=(50, 9), dpi=dpi)
+    fig.subplots_adjust(bottom=0.3)
+    sns.boxplot(x='region', y='income', data=df11, notch=False)
+    plt.ylabel('Среднемесячный доход, руб.')
+    plt.xlabel('Регион России')
 
-    # Add N Obs inside boxplot (optional)
     def add_n_obs(df22, group_col, y):
         medians_dict = {grp[0]: grp[1][y].median() for grp in df22.groupby(group_col)}
         xticklabels = [x.get_text() for x in plt.gca().get_xticklabels()]
@@ -50,10 +53,12 @@ def make_boxplot():
             plt.text(x, medians_dict[xticklabel]*1.01, "N: "+str(n_ob),
                      horizontalalignment='center', fontdict={'size': 12}, color='white')
 
-    add_n_obs(df11, group_col='region', y='incomes')
+    add_n_obs(df11, group_col='region', y='income')
     locs, labels = plt.xticks()
-    plt.setp(labels, rotation=75)
-    plt.title('Доход чиновников в различных регионах России', fontsize=14)
+    plt.setp(labels, rotation=60)
+    plt.title('Доход чиновников в различных регионах России на %s год, руб.' % year, fontsize=14)
+    plt.savefig("images/boxplot_incomes.png", bbox_inches='tight')
+    plt.show()
 
 
 def scatter_plot(region, year, a_square1, a_income1):
@@ -71,14 +76,12 @@ def scatter_plot(region, year, a_square1, a_income1):
     df22 = df22.append(df33, ignore_index=True)
     print(df22)
     if len(df22) > 1:
-        # categories = df2['gender'].unique()
         categories = ["Мужчины", "Женщины", "Не указано", "Народ"]
         # colors = [plt.cm.tab10(i/float(len(categories)-1)) for i in range(len(categories))]
         colors = ["red", "blue", "orange", "green"]
 
         fig = plt.figure(figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
         ax = fig.add_subplot(111)
-        # plt.tight_layout()
         for k, category in enumerate(categories):
             ax.scatter(
                 'income', 'squares', data=df22.loc[df22.gender == category, :],
@@ -139,40 +142,51 @@ def make_averaged_table():
     df_averaged.to_csv(r'data/output/averaged.csv', index=False, header=True)
 
 
-def grid_map():
+def grid_map(map_type):
     df = pd.read_csv('data/rosstat/declarator_rosstat.csv')
-    features_list = ['Площадь чиновника', 'Площадь средняя']
+    features_list = []
+    shuffle = False
+    if map_type == "square":
+        features_list = ['Площадь чиновника', 'Площадь средняя']
+        shuffle = True
+    if map_type == "income":
+        features_list = ['Доход чиновника', 'Средний доход в регионе']
+        shuffle = False
+    if map_type == "square2":
+        features_list = ['Площадь чиновника', 'Площадь чиновника (участки)']
+        shuffle = True
 
     plot_grid_map(df, features_list,
-                  shuffle=True,
+                  shuffle=shuffle,
                   pixels=20,
                   bar_plot=False,
                   tile_names='subj_rus',
                   fed_distr_color=True)
 
 
-# # H-lines
-# # Prepare Data
-# df = pd.read_csv("https://github.com/selva86/datasets/raw/master/mtcars.csv")
-# x = df.loc[:, ['mpg']]
-# df['mpg_z'] = (x - x.mean())/x.std()
-# df['colors'] = ['red' if x < 0 else 'green' for x in df['mpg_z']]
-# df.sort_values('mpg_z', inplace=True)
-# df.reset_index(inplace=True)
-#
-# # Draw plot
-# plt.figure(figsize=(14,14), dpi= 80)
-# plt.hlines(y=df.index, xmin=0, xmax=df.mpg_z)
-# for x, y, tex in zip(df.mpg_z, df.index, df.mpg_z):
-#     t = plt.text(x, y, round(tex, 2), horizontalalignment='right' if x < 0 else 'left',
-#                  verticalalignment='center', fontdict={'color':'red' if x < 0 else 'green', 'size':14})
-#
-# # Decorations
-# plt.yticks(df.index, df.cars, fontsize=12)
-# plt.title('Diverging Text Bars of Car Mileage', fontdict={'size':20})
-# plt.grid(linestyle='--', alpha=0.5)
-# plt.xlim(-2.5, 2.5)
-# plt.show()
+def h_lines():
+    df = pd.read_csv('data/output/averaged.csv')
+    # x = df.loc[:, ['a_cor']]
+    # df['a_cor_z'] = (x - x.mean())/x.std()
+    df['colors'] = ['red' if x < 0 else 'green' for x in df['a_cor']]
+    df.sort_values('a_cor', inplace=True)
+    df.reset_index(inplace=True)
+
+    fig = plt.figure(figsize=(14, 28), dpi=40)
+    fig.subplots_adjust(left=0.2)
+    plt.hlines(y=df.index, xmin=0, xmax=df.a_cor)
+    for x, y, tex in zip(df.a_cor, df.index, df.a_cor):
+        t = plt.text(x, y, round(tex, 2), horizontalalignment='right' if x < 0 else 'left',
+                     verticalalignment='center', fontdict={'color': 'red' if x < 0 else 'green', 'size': 14})
+
+    plt.yticks(df.index, df.region, fontsize=12)
+    plt.title(
+        'Корреляция между площадью недвижимости и доходами чиновников по регионам в 2015 году',
+        fontdict={'size': 20})
+    plt.grid(linestyle='--', alpha=0.5)
+    plt.xlim(-0.2, 1)
+    plt.show()
+
 
 # Initial preparations with the most common data
 with open('data/description/region.csv', 'r', encoding="utf-8") as f:
@@ -185,4 +199,10 @@ with open('data/rosstat/square_income.csv', 'r', encoding="utf-8") as f:
     rosstat = list(reader)
 headers = rosstat.pop(0)
 df_rosstat = pd.DataFrame(rosstat, columns=headers)
-grid_map()
+
+
+# preprocess_data_incomes()
+# make_averaged_table()
+make_boxplots(years[0], dpi=80)
+# make_scatterplots()
+# grid_map("income")

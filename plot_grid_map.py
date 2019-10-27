@@ -10,7 +10,8 @@ import bokeh.palettes as bp
 
 def preprocessing(df, features):
     for feat in features:
-        df[feat+'_num'] = df[feat].replace({' ': ''}, regex=True)
+        # df[feat+'_num'] = df[feat].replace({' ': ''}, regex=True)
+        df[feat+'_num'] = df[feat]
         df[feat+'_num'] = pd.to_numeric(df[feat+'_num'])
     return df
 
@@ -29,7 +30,7 @@ def plot_grid_map(df,
                   pallete_custom=['#aaaacc',
                                   '#666688'],
                   output_filname='index.html',
-                  fed_distr_color = True):
+                  fed_distr_color=True):
 
     output_file(output_filname, title=map_title)
 
@@ -43,9 +44,9 @@ def plot_grid_map(df,
     im_arr = []
     for i in range(df.shape[0]):
         if bar_plot:
-            im_arr.append(tile_generator(df[features_list_num].loc[i], False, shape=[100,1]))
+            im_arr.append(tile_generator(df[features_list_num].loc[i], shuffle, shape=[100, 1]))
         else:
-            im_arr.append(tile_generator(df[features_list_num].loc[i], shuffle, shape=[pixels,pixels]))
+            im_arr.append(tile_generator(df[features_list_num].loc[i], shuffle, shape=[pixels, pixels]))
     df['image'] = im_arr
 
     source = ColumnDataSource(df)
@@ -71,8 +72,8 @@ def plot_grid_map(df,
 
     p.xgrid.grid_line_color = None
     p.ygrid.grid_line_color = None
-    p.xaxis.visible=False
-    p.yaxis.visible=False
+    p.xaxis.visible = False
+    p.yaxis.visible = False
 
     if is_pallete_custom:
         # Filling probably missing colors
@@ -90,7 +91,7 @@ def plot_grid_map(df,
         if len(features_list) < pallete_i:
             p.rect('col', 'row', 0.1, 0.1, source=source, alpha=1, color=pallete[i*2], legend=features_list[i]+' ')
         else:
-            p.rect('col', 'row', 0.1, 0.1, source=source, alpha=1, color=pallete[ i ], legend=features_list[i]+' ')
+            p.rect('col', 'row', 0.1, 0.1, source=source, alpha=1, color=pallete[i], legend=features_list[i]+' ')
 
     # 'image' has no hover option, that's why we use rect underlayer
     if fed_distr_color:
@@ -105,10 +106,10 @@ def plot_grid_map(df,
     x = dodge("col", -0.4, range=p.x_range)
     text_props = {"source": source, "text_align": "left", "text_baseline": "middle"}
     r = p.text(x=x, y=dodge("row", 0.35, range=p.y_range), text=tile_names, **text_props, text_color="#000000")
-    r.glyph.text_font_size="7pt"
+    r.glyph.text_font_size = "7pt"
 
     # p.legend.orientation = "horizontal"
-    p.legend.location ="bottom_right"
+    p.legend.location = "bottom_right"
 
     tooltips = [
         ("Округ: ", "@fed_district_full"),
@@ -120,6 +121,6 @@ def plot_grid_map(df,
         val = '@{' + feat + '}'
         tooltips.append((name, val))
 
-    p.add_tools(HoverTool(tooltips = tooltips))
+    p.add_tools(HoverTool(tooltips=tooltips))
 
     show(p)

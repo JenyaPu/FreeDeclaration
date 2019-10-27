@@ -151,7 +151,7 @@ def add_single_region_data_persons(region, conn, cursor):
                         conn.commit()
 
 
-def initialize_database():
+def initialize_databases():
 
     conn1 = sqlite3.connect("data/database/incomes.db")
     cursor = conn1.cursor()
@@ -228,12 +228,12 @@ with open('data/description/region.csv', 'r', encoding="utf-8") as f:
     next(reader, None)
     regions = list(reader)
 url = "https://declarator.org/api/v1/search/sections/"
-# years = ['2012', '2013', '2014', '2015', '2016', '2017']
-years = ['2015']
+years = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017']
 
-# Fill-in  databases
-initialize_database()
+initialize_databases()
 start = time.time()
+download_incomes()
+download_real_estates()
 download_people()
 end = time.time()
 print(str(datetime.timedelta(seconds=(end - start))))

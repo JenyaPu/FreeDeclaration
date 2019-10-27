@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def tile_generator(values, rand=False, shape=[10,10]):
+def tile_generator(values, rand=False, shape=[10, 10]):
     length = shape[0]*shape[1]
     values = np.array(values)
     summ = sum(values)
