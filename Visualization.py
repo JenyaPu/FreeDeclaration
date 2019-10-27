@@ -143,7 +143,7 @@ def make_averaged_table():
 
 
 def grid_map(map_type):
-    df = pd.read_csv('data/rosstat/declarator_rosstat.csv')
+    df = pd.read_csv('data/declarator_rosstat/declarator_rosstat.csv')
     features_list = []
     shuffle = False
     if map_type == "square":
